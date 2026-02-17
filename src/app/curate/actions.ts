@@ -95,10 +95,8 @@ export async function curateFeedsAction(
                     continue;
                 }
                 
-                const [summaryResult, relevanceResult] = await Promise.all([
-                    summarizeArticle({ articleContent: articleContent.substring(0, 15000) }),
-                    assessArticleRelevance({ articleContent: articleContent.substring(0, 15000) }),
-                ]);
+                const summaryResult = await summarizeArticle({ articleContent: articleContent.substring(0, 15000) });
+                const relevanceResult = await assessArticleRelevance({ articleContent: articleContent.substring(0, 15000) });
 
                 const newArticleRef = doc(articlesCollectionRef);
                 const newArticle: Article = {
