@@ -1,6 +1,6 @@
 'use server';
 
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase/init';
 import { assessArticleRelevance } from '@/ai/flows/relevance-assessment-flow';
 import { summarizeArticle } from '@/ai/flows/article-summarization-flow';
 import type { Article, Source } from '@/app/lib/types';
