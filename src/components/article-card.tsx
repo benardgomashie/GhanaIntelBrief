@@ -23,6 +23,14 @@ type ArticleCardProps = {
 };
 
 export function ArticleCard({ article }: ArticleCardProps) {
+  console.log('[ArticleCard] Rendering article:', {
+    id: article.id,
+    title: article.title,
+    whyThisMatters: article.whyThisMattersExplanation,
+    aiProvider: article.aiProvider,
+    summaryLength: article.summary?.length
+  });
+
   const summaryPoints = article.summary
     .split('\n')
     .map((point) => point.replace(/^-/, '').trim())
@@ -37,6 +45,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
               src={article.imageThumbnailUrl}
               alt={article.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
             />
           ) : (

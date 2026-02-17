@@ -11,6 +11,7 @@ export type Article = {
   isRelevantPolicy: boolean;
   isRelevantOpportunity: boolean;
   isRelevantGrowth: boolean;
+  aiProvider?: string;
   sourceIds: string[];
   categoryIds: string[];
 };

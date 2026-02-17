@@ -1,15 +1,15 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for processing news articles.
- * It summarizes the article, assesses its relevance, and explains why it matters.
+ * @fileOverview A multi-provider AI flow for processing news articles.
+ * Uses rotation strategy: Gemini → OpenAI → Hugging Face → Fallback
  *
- * - processArticle - A function that handles the entire article processing pipeline.
+ * - processArticle - A function that handles the entire article processing pipeline with provider rotation.
  * - ArticleProcessingInput - The input type for the processArticle function.
  * - ArticleProcessingOutput - The return type for the processArticle function.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { summarizeWithRotation } from '@/ai/rotation';
+import { z } from 'zod';
 
 const ArticleProcessingInputSchema = z.object({
   articleContent: z.string().describe('The full text content of the article to be processed.'),
@@ -27,44 +27,39 @@ const ArticleProcessingOutputSchema = z.object({
   isRelevantPolicy: z.boolean().describe("True if the article is assessed by AI as relevant to 'policy' in Ghana."),
   isRelevantOpportunity: z.boolean().describe("True if the article is assessed by AI as relevant to 'opportunity' in Ghana."),
   isRelevantGrowth: z.boolean().describe("True if the article is assessed by AI as relevant to 'growth' in Ghana."),
+  provider: z.string().optional().describe('The AI provider that successfully processed this article.'),
 });
 export type ArticleProcessingOutput = z.infer<typeof ArticleProcessingOutputSchema>;
 
-const articleProcessingPrompt = ai.definePrompt({
-  name: 'articleProcessingPrompt',
-  input: { schema: ArticleProcessingInputSchema },
-  output: { schema: ArticleProcessingOutputSchema },
-  prompt: `You are an expert analyst for news related to Ghana.
-Your task is to analyze the provided article and return a structured JSON object.
-
-Based on the article content, provide the following:
-1. 'summary': A concise, 5-bullet point summary of the key takeaways.
-2. 'whyThisMattersExplanation': A concise explanation (2-3 sentences) for why the article is significant for Ghana's development, focusing on money, policy, opportunity, and growth.
-3. 'isRelevantMoney': A boolean value indicating relevance to 'money'.
-4. 'isRelevantPolicy': A boolean value indicating relevance to 'policy'.
-5. 'isRelevantOpportunity': A boolean value indicating relevance to 'opportunity'.
-6. 'isRelevantGrowth': A boolean value indicating relevance to 'growth'.
-
-Article Content:
-{{{articleContent}}}
-`,
-});
-
-const articleProcessingFlow = ai.defineFlow(
-  {
-    name: 'articleProcessingFlow',
-    inputSchema: ArticleProcessingInputSchema,
-    outputSchema: ArticleProcessingOutputSchema,
-  },
-  async (input) => {
-    const { output } = await articleProcessingPrompt(input);
-    if (!output) {
-      throw new Error('Failed to generate article analysis.');
-    }
-    return output;
-  }
-);
-
+/**
+ * Process article with smart AI provider rotation
+ * Automatically falls back through multiple providers on quota/errors
+ */
 export async function processArticle(input: ArticleProcessingInput): Promise<ArticleProcessingOutput> {
-  return articleProcessingFlow(input);
+  const { articleContent } = input;
+
+  // Validate input
+  if (!articleContent || articleContent.trim().length < 50) {
+    throw new Error('Article content is too short or empty');
+  }
+
+  try {
+    // Use rotation strategy with automatic fallback
+    const result = await summarizeWithRotation(articleContent);
+    
+    console.log(`[Article Processing] ✅ Processed with provider: ${result.provider}`);
+    
+    return {
+      summary: result.summary,
+      whyThisMattersExplanation: result.whyThisMattersExplanation,
+      isRelevantMoney: result.isRelevantMoney,
+      isRelevantPolicy: result.isRelevantPolicy,
+      isRelevantOpportunity: result.isRelevantOpportunity,
+      isRelevantGrowth: result.isRelevantGrowth,
+      provider: result.provider,
+    };
+  } catch (error) {
+    console.error('[Article Processing] ❌ Fatal error:', error);
+    throw new Error('Failed to process article with any available AI provider');
+  }
 }

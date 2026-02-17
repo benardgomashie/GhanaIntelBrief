@@ -13,6 +13,53 @@ function extractTextFromHtml(html: string): string {
   return cleanHtml;
 }
 
+function extractImageUrl(item: any): string | undefined {
+  // Try various RSS image fields in order of preference
+  
+  // 1. Media enclosures (common in RSS 2.0)
+  if (item.enclosure?.url && item.enclosure.type?.startsWith('image/')) {
+    return item.enclosure.url;
+  }
+  
+  // 2. Media:content (common in news feeds)
+  if (item['media:content']?.$ && item['media:content'].$.url) {
+    return item['media:content'].$.url;
+  }
+  if (Array.isArray(item['media:content'])) {
+    const imageMedia = item['media:content'].find((media: any) => 
+      media.$.medium === 'image' || media.$.type?.startsWith('image/')
+    );
+    if (imageMedia?.$.url) return imageMedia.$.url;
+  }
+  
+  // 3. Media:thumbnail
+  if (item['media:thumbnail']?.$ && item['media:thumbnail'].$.url) {
+    return item['media:thumbnail'].$.url;
+  }
+  
+  // 4. iTunes image
+  if (item.itunes?.image) {
+    return item.itunes.image;
+  }
+  
+  // 5. Extract from content HTML
+  const content = item['content:encoded'] || item.content || '';
+  const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch && imgMatch[1]) {
+    return imgMatch[1];
+  }
+  
+  // 6. Standard image field
+  if (item.image?.url) {
+    return item.image.url;
+  }
+  if (typeof item.image === 'string') {
+    return item.image;
+  }
+  
+  return undefined;
+}
+
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -66,6 +113,22 @@ export async function GET(request: NextRequest) {
 
           const analysisResult = await processArticle({ articleContent: articleContent.substring(0, 15000) });
           
+          // Extract image from RSS feed
+          const imageUrl = extractImageUrl(item);
+          
+          console.log('[CRON] Analysis result:', {
+            provider: analysisResult.provider,
+            summaryLength: analysisResult.summary?.length,
+            whyThisMatters: analysisResult.whyThisMattersExplanation?.substring(0, 100),
+            imageUrl,
+            relevance: {
+              money: analysisResult.isRelevantMoney,
+              policy: analysisResult.isRelevantPolicy,
+              opportunity: analysisResult.isRelevantOpportunity,
+              growth: analysisResult.isRelevantGrowth
+            }
+          });
+          
           const newArticleRef = articlesCollectionRef.doc();
           const newArticle: Article = {
             id: newArticleRef.id,
@@ -75,13 +138,24 @@ export async function GET(request: NextRequest) {
             aggregatedAt: new Date().toISOString(),
             summary: analysisResult.summary,
             whyThisMattersExplanation: analysisResult.whyThisMattersExplanation,
+            imageThumbnailUrl: imageUrl,
             isRelevantMoney: analysisResult.isRelevantMoney,
             isRelevantPolicy: analysisResult.isRelevantPolicy,
             isRelevantOpportunity: analysisResult.isRelevantOpportunity,
             isRelevantGrowth: analysisResult.isRelevantGrowth,
+            aiProvider: analysisResult.provider || 'unknown',
             sourceIds: [source.id],
             categoryIds: [],
           };
+
+          console.log('[CRON] Saving article to Firebase:', {
+            id: newArticle.id,
+            title: newArticle.title,
+            aiProvider: newArticle.aiProvider,
+            hasImage: !!newArticle.imageThumbnailUrl,
+            imageUrl: newArticle.imageThumbnailUrl?.substring(0, 60),
+            whyThisMattersExplanation: newArticle.whyThisMattersExplanation?.substring(0, 100)
+          });
 
           await newArticleRef.set(newArticle);
           

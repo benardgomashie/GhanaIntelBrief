@@ -9,10 +9,15 @@ type AnalysisResultProps = {
 };
 
 export function AnalysisResult({ summary, relevance }: AnalysisResultProps) {
+  console.log('[AnalysisResult] Received props:', { summary, relevance });
+  
   const summaryPoints = summary
     .split('\n')
     .map((point) => point.replace(/^-/, '').trim())
     .filter((p) => p.length > 0);
+
+  console.log('[AnalysisResult] Parsed summary points:', summaryPoints);
+  console.log('[AnalysisResult] Relevance explanation:', relevance);
 
   return (
     <div className="space-y-8">

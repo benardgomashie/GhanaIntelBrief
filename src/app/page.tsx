@@ -31,6 +31,18 @@ export default function Home() {
   );
   const { data: articles, isLoading } = useCollection<Article>(articlesQuery);
 
+  console.log('[HomePage] Articles loaded:', {
+    count: articles?.length || 0,
+    isLoading,
+    articles: articles?.map(a => ({
+      id: a.id,
+      title: a.title,
+      whyThisMatters: a.whyThisMattersExplanation?.substring(0, 50) + '...',
+      aiProvider: a.aiProvider,
+      summary: a.summary?.substring(0, 50) + '...'
+    }))
+  });
+
   return (
     <>
       <h2 className="mb-8 font-headline text-3xl font-bold tracking-tight text-foreground md:text-4xl">
