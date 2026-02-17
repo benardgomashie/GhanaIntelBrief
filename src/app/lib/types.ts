@@ -1,13 +1,16 @@
 export type Article = {
   id: string;
   title: string;
-  category: 'Business' | 'Tech' | 'Policy';
-  date: string;
-  imageUrlId: string;
+  originalUrl: string;
+  publishedAt: string;
+  aggregatedAt: string;
   summary: string;
-  relevance: string;
-  sources: {
-    name: string;
-    url: string;
-  }[];
+  whyThisMattersExplanation: string;
+  imageThumbnailUrl?: string;
+  isRelevantMoney: boolean;
+  isRelevantPolicy: boolean;
+  isRelevantOpportunity: boolean;
+  isRelevantGrowth: boolean;
+  sourceIds: string[];
+  categoryIds: string[];
 };

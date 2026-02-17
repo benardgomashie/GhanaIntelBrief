@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import type { Article } from '@/app/lib/types';
-import placeholderData from '@/lib/placeholder-images.json';
 import {
   Card,
   CardContent,
@@ -10,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Accordion,
   AccordionContent,
@@ -18,7 +16,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Link, ExternalLink, ScrollText } from 'lucide-react';
-import { categoryIcons } from './icons';
 import { Separator } from './ui/separator';
 
 type ArticleCardProps = {
@@ -26,39 +23,31 @@ type ArticleCardProps = {
 };
 
 export function ArticleCard({ article }: ArticleCardProps) {
-  const { placeholderImages } = placeholderData;
-  const imageInfo = placeholderImages.find((img) => img.id === article.imageUrlId);
-
   const summaryPoints = article.summary
     .split('\n')
-    .map((point) => point.replace(/^-/, '').trim());
+    .map((point) => point.replace(/^-/, '').trim())
+    .filter((p) => p.length > 0);
 
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
       <CardHeader className="p-0">
         <div className="relative h-48 w-full">
-          {imageInfo && (
+          {article.imageThumbnailUrl ? (
             <Image
-              src={imageInfo.imageUrl}
-              alt={imageInfo.description}
-              data-ai-hint={imageInfo.imageHint}
+              src={article.imageThumbnailUrl}
+              alt={article.title}
               fill
               className="object-cover"
             />
+          ) : (
+            <div className="h-full w-full bg-secondary" />
           )}
-          <Badge
-            variant="secondary"
-            className="absolute left-4 top-4 flex items-center gap-2 border-primary/50 text-sm"
-          >
-            {categoryIcons[article.category]}
-            {article.category}
-          </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="flex-grow p-6">
         <p className="mb-2 text-sm text-muted-foreground">
-          {new Date(article.date).toLocaleDateString('en-US', {
+          {new Date(article.publishedAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -87,7 +76,9 @@ export function ArticleCard({ article }: ArticleCardProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
-              <p className="text-base text-muted-foreground">{article.relevance}</p>
+              <p className="text-base text-muted-foreground">
+                {article.whyThisMattersExplanation}
+              </p>
             </AccordionContent>
           </AccordionItem>
           <Separator />
@@ -95,25 +86,19 @@ export function ArticleCard({ article }: ArticleCardProps) {
             <AccordionTrigger className="px-6 py-4 text-base font-semibold hover:no-underline">
               <div className="flex items-center gap-2">
                 <Link className="h-5 w-5 text-accent" />
-                Original Sources
+                Original Source
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
-              <ul className="space-y-2">
-                {article.sources.map((source) => (
-                  <li key={source.name}>
-                    <a
-                      href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 text-base text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      {source.name}
-                      <ExternalLink className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <a
+                href={article.originalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 text-base text-muted-foreground transition-colors hover:text-primary"
+              >
+                Read full article
+                <ExternalLink className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              </a>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
