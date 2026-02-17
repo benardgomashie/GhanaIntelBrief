@@ -1,5 +1,5 @@
+'use server';
 import { config } from 'dotenv';
-config();
+config({ path: '.env' });
 
-import '@/ai/flows/article-summarization-flow.ts';
-import '@/ai/flows/relevance-assessment-flow.ts';
+import '@/ai/flows/article-processing-flow.ts';

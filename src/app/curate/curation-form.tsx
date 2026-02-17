@@ -17,8 +17,7 @@ import {
 } from 'firebase/firestore';
 import Parser from 'rss-parser';
 import type { Article, Source } from '@/app/lib/types';
-import { assessArticleRelevance } from '@/ai/flows/relevance-assessment-flow';
-import { summarizeArticle } from '@/ai/flows/article-summarization-flow';
+import { processArticle } from '@/ai/flows/article-processing-flow';
 
 // State interface for the curation process
 export interface CurationState {
@@ -136,8 +135,7 @@ export function CurationForm() {
               continue;
             }
 
-            const summaryResult = await summarizeArticle({ articleContent: articleContent.substring(0, 15000) });
-            const relevanceResult = await assessArticleRelevance({ articleContent: articleContent.substring(0, 15000) });
+            const analysisResult = await processArticle({ articleContent: articleContent.substring(0, 15000) });
 
             const newArticleRef = doc(articlesCollectionRef);
             const newArticle: Article = {
@@ -146,12 +144,12 @@ export function CurationForm() {
               originalUrl: originalUrl,
               publishedAt: item.isoDate || new Date().toISOString(),
               aggregatedAt: new Date().toISOString(),
-              summary: summaryResult.summary,
-              whyThisMattersExplanation: relevanceResult.whyThisMattersExplanation,
-              isRelevantMoney: relevanceResult.isRelevantMoney,
-              isRelevantPolicy: relevanceResult.isRelevantPolicy,
-              isRelevantOpportunity: relevanceResult.isRelevantOpportunity,
-              isRelevantGrowth: relevanceResult.isRelevantGrowth,
+              summary: analysisResult.summary,
+              whyThisMattersExplanation: analysisResult.whyThisMattersExplanation,
+              isRelevantMoney: analysisResult.isRelevantMoney,
+              isRelevantPolicy: analysisResult.isRelevantPolicy,
+              isRelevantOpportunity: analysisResult.isRelevantOpportunity,
+              isRelevantGrowth: analysisResult.isRelevantGrowth,
               sourceIds: [source.id],
               categoryIds: [],
             };

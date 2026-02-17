@@ -1,8 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { summarizeArticle } from '@/ai/flows/article-summarization-flow';
-import { assessArticleRelevance } from '@/ai/flows/relevance-assessment-flow';
+import { processArticle } from '@/ai/flows/article-processing-flow';
 
 const FormSchema = z.object({
   articleContent: z.string().min(100, {
@@ -37,19 +36,16 @@ export async function analyzeArticleAction(
   const { articleContent } = validatedFields.data;
 
   try {
-    const [summaryResult, relevanceResult] = await Promise.all([
-      summarizeArticle({ articleContent }),
-      assessArticleRelevance({ articleContent }),
-    ]);
+    const result = await processArticle({ articleContent });
 
-    if (!summaryResult.summary || !relevanceResult.whyThisMattersExplanation) {
+    if (!result.summary || !result.whyThisMattersExplanation) {
       throw new Error('AI generation failed to produce complete results.');
     }
 
     return {
       message: 'Analysis successful.',
-      summary: summaryResult.summary,
-      relevance: relevanceResult.whyThisMattersExplanation,
+      summary: result.summary,
+      relevance: result.whyThisMattersExplanation,
     };
   } catch (error) {
     console.error('AI Analysis Error:', error);
