@@ -1,6 +1,6 @@
 'use client';
 
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { ArticleCard } from '@/components/article-card';
 import type { Article } from '@/app/lib/types';
@@ -26,7 +26,7 @@ function ArticleSkeleton() {
 export default function Home() {
   const firestore = useFirestore();
   const articlesQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'articles') : null),
+    () => (firestore ? query(collection(firestore, 'articles'), orderBy('aggregatedAt', 'desc')) : null),
     [firestore]
   );
   const { data: articles, isLoading } = useCollection<Article>(articlesQuery);
