@@ -87,6 +87,8 @@ async function handleCuration(request: NextRequest) {
     );
 
     const articlesCollectionRef = adminFirestore.collection('articles');
+    const newArticlesTitles: string[] = [];
+    const maxArticlesPerRun = 5; // Process up to 5 new articles per run
 
     for (const source of sources) {
       if (!source.feedUrl) continue;
@@ -111,7 +113,13 @@ async function handleCuration(request: NextRequest) {
             continue; // Article already exists, skip to the next one
           }
 
-          // Found a new article, process it and then finish.
+          // Check if we've reached the limit for this run
+          if (newArticlesTitles.length >= maxArticlesPerRun) {
+            console.log(`[CRON] Reached limit of ${maxArticlesPerRun} articles for this run, stopping.`);
+            break;
+          }
+
+          // Found a new article, process it
           console.log(`[CRON] Processing new article: "${item.title?.substring(0, 50)}..."`);
           
           const articleContent = extractTextFromHtml(item['content:encoded'] || item.content || '');
@@ -169,18 +177,35 @@ async function handleCuration(request: NextRequest) {
           await newArticleRef.set(newArticle);
           
           console.log(`[CRON] Successfully added one new article: "${newArticle.title}"`);
+          newArticlesTitles.push(newArticle.title);
           
-          // Return immediately after processing one article
-          return NextResponse.json({
-            success: true,
-            message: `Successfully curated 1 new article: ${newArticle.title}`,
-          });
+          // Continue to the next article (instead of returning immediately)
+        }
+        
+        // Check if we've reached the limit after processing this source
+        if (newArticlesTitles.length >= maxArticlesPerRun) {
+          console.log(`[CRON] Reached limit of ${maxArticlesPerRun} articles, stopping source iteration.`);
+          break;
         }
       } catch (feedError) {
         const errorMessage = (feedError as Error).message;
         console.error(`[CRON] Error for source "${source.name}": ${errorMessage}`);
         // Continue to the next source even if one fails
       }
+    }
+    
+    // Return results based on how many articles were processed
+    if (newArticlesTitles.length > 0) {
+      const message = newArticlesTitles.length === 1
+        ? `Successfully curated 1 new article: ${newArticlesTitles[0]}`
+        : `Successfully curated ${newArticlesTitles.length} new articles`;
+      
+      return NextResponse.json({
+        success: true,
+        message,
+        count: newArticlesTitles.length,
+        titles: newArticlesTitles
+      });
     }
     
     // If we get here, no new articles were found in any feed
