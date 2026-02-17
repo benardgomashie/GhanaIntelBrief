@@ -100,7 +100,7 @@ service cloud.firestore {
      */
     match /articles/{articleId} {
       allow get, list: if true;
-      allow create: if isAdmin();
+      allow create: if isSignedIn();
       allow update, delete: if isAdmin() && documentExists();
     }
 
@@ -113,7 +113,7 @@ service cloud.firestore {
      */
     match /sources/{sourceId} {
       allow get, list: if true;
-      allow create: if isAdmin();
+      allow create: if isSignedIn();
       allow update, delete: if isAdmin() && documentExists();
     }
 
@@ -126,7 +126,7 @@ service cloud.firestore {
      */
     match /categories/{categoryId} {
       allow get, list: if true;
-      allow create: if isAdmin();
+      allow create: if isSignedIn();
       allow update, delete: if isAdmin() && documentExists();
     }
 
