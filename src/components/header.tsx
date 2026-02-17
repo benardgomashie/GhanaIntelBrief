@@ -1,9 +1,37 @@
+'use client';
+
 import Link from 'next/link';
-import { TestTube2 } from 'lucide-react';
+import { Database, TestTube2 } from 'lucide-react';
 import { NewsletterForm } from './newsletter-form';
 import { Button } from './ui/button';
+import { useFirestore } from '@/firebase';
+import { seedDatabase } from '@/app/lib/seed';
+import { useToast } from '@/hooks/use-toast';
 
 export function Header() {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const handleSeed = async () => {
+    if (!firestore) return;
+    try {
+      await seedDatabase(firestore);
+      toast({
+        title: 'Database Seeded',
+        description: 'Sample articles have been added to Firestore.',
+      });
+    } catch (e: any) {
+      console.error(e);
+      toast({
+        variant: 'destructive',
+        title: 'Seeding Failed',
+        description:
+          e.message ||
+          'Could not seed database. It may have already been seeded.',
+      });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-5 md:flex-row md:px-6">
@@ -31,6 +59,14 @@ export function Header() {
               Analyze Article
             </Button>
           </Link>
+          <Button
+            variant="outline"
+            className="w-full justify-center font-semibold sm:w-auto"
+            onClick={handleSeed}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Seed Database
+          </Button>
         </div>
       </div>
     </header>
