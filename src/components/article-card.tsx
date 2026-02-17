@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import NextLink from 'next/link';
 import type { Article } from '@/app/lib/types';
 import {
   Card,
@@ -39,24 +40,26 @@ export function ArticleCard({ article }: ArticleCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full">
-          {article.imageThumbnailUrl ? (
-            <Image
-              src={article.imageThumbnailUrl}
-              alt={article.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700">
-              <div className="text-center px-6">
-                <ScrollText className="mx-auto h-12 w-12 text-white/90 mb-2" />
-                <p className="text-sm font-semibold text-white/80">Ghana IntelBrief</p>
+        <NextLink href={`/article/${article.id}`} className="block">
+          <div className="relative h-48 w-full">
+            {article.imageThumbnailUrl ? (
+              <Image
+                src={article.imageThumbnailUrl}
+                alt={article.title}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform duration-300 hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700">
+                <div className="text-center px-6">
+                  <ScrollText className="mx-auto h-12 w-12 text-white/90 mb-2" />
+                  <p className="text-sm font-semibold text-white/80">Ghana IntelBrief</p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </NextLink>
       </CardHeader>
 
       <CardContent className="flex-grow p-6">
@@ -67,9 +70,11 @@ export function ArticleCard({ article }: ArticleCardProps) {
             day: 'numeric',
           })}
         </p>
-        <CardTitle className="mb-4 font-headline text-2xl leading-tight">
-          {article.title}
-        </CardTitle>
+        <NextLink href={`/article/${article.id}`}>
+          <CardTitle className="mb-4 font-headline text-2xl leading-tight transition-colors hover:text-primary cursor-pointer">
+            {article.title}
+          </CardTitle>
+        </NextLink>
         <ul className="space-y-2 text-foreground/90">
           {summaryPoints.map((point, index) => (
             <li key={index} className="flex items-start gap-3">
@@ -78,6 +83,13 @@ export function ArticleCard({ article }: ArticleCardProps) {
             </li>
           ))}
         </ul>
+        <NextLink 
+          href={`/article/${article.id}`}
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+        >
+          Read full briefing
+          <ExternalLink className="h-4 w-4" />
+        </NextLink>
       </CardContent>
 
       <CardFooter className="flex-col items-start bg-muted/50 p-0">
