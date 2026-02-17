@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   title: 'Ghana IntelBrief',
   description:
     "Aggregated news and AI-powered insights on Ghana's business, tech, and policy landscape.",
-  other: {
-    'google-adsense-account': 'ca-pub-6905498298815487',
+  verification: {
+    other: {
+      'google-adsense-account': 'ca-pub-6905498298815487',
+    },
   },
 };
 
@@ -28,13 +30,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
           rel="stylesheet"
         />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6905498298815487"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
       </head>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6905498298815487"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <div className="flex min-h-screen flex-col">
