@@ -43,8 +43,26 @@ export default function Home() {
     }))
   });
 
+  // Generate structured data for SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Ghana IntelBrief',
+    description: "AI-curated news on Ghana's business, tech, and policy landscape",
+    url: 'https://www.ghanaintelbrief.site',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://www.ghanaintelbrief.site/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <h2 className="mb-8 font-headline text-3xl font-bold tracking-tight text-foreground md:text-4xl">
         Latest Briefings
       </h2>
