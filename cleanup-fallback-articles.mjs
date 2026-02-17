@@ -34,16 +34,7 @@ async function cleanupFallbackArticles() {
     snapshot.forEach((doc) => {
       const data = doc.data();
       // Identify fallback articles by checking if aiProvider is 'fallback'
-      // or if summary contains fallback text
-      const summaryText = Array.isArray(data.summary) 
-        ? data.summary.join(' ') 
-        : (data.summary || '');
-        
-      if (
-        data.aiProvider === 'fallback' ||
-        summaryText.includes('AI analysis temporarily unavailable') ||
-        summaryText.includes('Please check back later')
-      ) {
+      if (data.aiProvider === 'fallback') {
         fallbackArticles.push({
           id: doc.id,
           title: data.title,

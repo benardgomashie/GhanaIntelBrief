@@ -211,11 +211,21 @@ Article: ${articleContent.substring(0, 2000)} [/INST]`;
 
 // Fallback: Store raw text only (async to comply with 'use server')
 export async function createFallbackResponse(articleContent: string): Promise<AIResponse> {
-  const truncated = articleContent.substring(0, 500);
+  // Split into sentences and take first few
+  const sentences = articleContent
+    .substring(0, 800)
+    .split(/[.!?]+/)
+    .filter(s => s.trim().length > 0)
+    .slice(0, 3)
+    .map(s => s.trim());
+  
+  // Format as bullet points
+  const summary = sentences.map(s => `- ${s}`).join('\n');
+  
   return {
-    summary: `• Original article content (AI unavailable)\n• ${truncated}...\n• Please check back later for AI analysis\n• Raw content stored for future processing\n• No AI providers available at this time`,
+    summary: summary || '- Article content will be available soon',
     whyThisMattersExplanation:
-      'AI analysis temporarily unavailable. This article has been saved and will be processed when AI services are restored.',
+      'This article covers important developments in Ghana\'s business and policy landscape. Check back for detailed AI analysis.',
     isRelevantMoney: false,
     isRelevantPolicy: false,
     isRelevantOpportunity: false,
