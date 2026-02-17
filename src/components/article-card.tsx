@@ -33,7 +33,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
 
   const summaryPoints = article.summary
     .split('\n')
-    .map((point) => point.replace(/^-/, '').trim())
+    .map((point) => point.replace(/^[-•]\s*/, '').trim())
     .filter((p) => p.length > 0);
 
   return (

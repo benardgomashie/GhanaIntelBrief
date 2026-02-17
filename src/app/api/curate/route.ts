@@ -60,7 +60,7 @@ function extractImageUrl(item: any): string | undefined {
   return undefined;
 }
 
-export async function GET(request: NextRequest) {
+async function handleCuration(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', {
@@ -189,4 +189,13 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Export both GET and POST handlers (cron services may use either)
+export async function GET(request: NextRequest) {
+  return handleCuration(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleCuration(request);
 }
