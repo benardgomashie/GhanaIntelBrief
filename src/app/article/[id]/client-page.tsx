@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function ArticlePage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const [articleId, setArticleId] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     // Unwrap params since it's a Promise in Next.js 15
@@ -111,7 +112,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       {/* Main Article Card */}
       <Card className="overflow-hidden">
         {/* Hero Image */}
-        {article.imageThumbnailUrl ? (
+        {article.imageThumbnailUrl && !imageError ? (
           <div className="relative h-96 w-full">
             <Image
               src={article.imageThumbnailUrl}
@@ -120,6 +121,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               priority
               sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
+              onError={() => setImageError(true)}
+              unoptimized={article.imageThumbnailUrl.includes('http://') || article.imageThumbnailUrl.includes('myjoyonline.com')}
             />
           </div>
         ) : (

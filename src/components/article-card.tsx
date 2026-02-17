@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import NextLink from 'next/link';
+import React from 'react';
 import type { Article } from '@/app/lib/types';
 import {
   Card,
@@ -32,6 +33,8 @@ export function ArticleCard({ article }: ArticleCardProps) {
     summaryLength: article.summary?.length
   });
 
+  const [imageError, setImageError] = React.useState(false);
+
   const summaryPoints = article.summary
     .split('\n')
     .map((point) => point.replace(/^[-•]\s*/, '').trim())
@@ -42,13 +45,15 @@ export function ArticleCard({ article }: ArticleCardProps) {
       <CardHeader className="p-0">
         <NextLink href={`/article/${article.id}`} className="block">
           <div className="relative h-48 w-full">
-            {article.imageThumbnailUrl ? (
+            {article.imageThumbnailUrl && !imageError ? (
               <Image
                 src={article.imageThumbnailUrl}
                 alt={article.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 hover:scale-105"
+                onError={() => setImageError(true)}
+                unoptimized={article.imageThumbnailUrl.includes('http://') || article.imageThumbnailUrl.includes('myjoyonline.com')}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700">
