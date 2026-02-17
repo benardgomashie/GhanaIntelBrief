@@ -95,10 +95,11 @@ export function CurationForm() {
           continue;
         }
 
-        updateLog(`Fetching feed for "${source.name}" from ${source.feedUrl}`);
+        updateLog(`Fetching feed for "${source.name}" via proxy from ${source.feedUrl}`);
         
         try {
-          const feed = await parser.parseURL(source.feedUrl);
+          const proxyUrl = `/api/cors-proxy?url=${encodeURIComponent(source.feedUrl)}`;
+          const feed = await parser.parseURL(proxyUrl);
           updateLog(`Found ${feed.items.length} items in "${source.name}" feed.`);
 
           const batch = writeBatch(firestore);
