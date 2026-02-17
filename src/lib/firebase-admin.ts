@@ -28,5 +28,6 @@ if (getApps().length === 0) {
 }
 
 firestore = getFirestore(app);
+firestore.settings({ ignoreUndefinedProperties: true });
 
 export { app as adminApp, firestore as adminFirestore };

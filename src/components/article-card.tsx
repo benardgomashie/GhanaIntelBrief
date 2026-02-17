@@ -49,7 +49,12 @@ export function ArticleCard({ article }: ArticleCardProps) {
               className="object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-secondary" />
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700">
+              <div className="text-center px-6">
+                <ScrollText className="mx-auto h-12 w-12 text-white/90 mb-2" />
+                <p className="text-sm font-semibold text-white/80">Ghana IntelBrief</p>
+              </div>
+            </div>
           )}
         </div>
       </CardHeader>
