@@ -40,6 +40,7 @@ export async function curateFeedsAction(
   const parser = new Parser();
   const logs: string[] = [];
   let totalNewArticles = 0;
+  const ARTICLES_PER_SOURCE = 2; // Limit to avoid rate-limiting on free tier
 
   const updateLog = (message: string) => {
     // In a real streaming scenario, this would send updates.
@@ -73,6 +74,11 @@ export async function curateFeedsAction(
             const batch = writeBatch(firestore);
 
             for (const item of feed.items) {
+                if (sourceNewArticles >= ARTICLES_PER_SOURCE) {
+                    updateLog(`Reached article limit for "${source.name}" for this run.`);
+                    break;
+                }
+
                 const originalUrl = item.link;
                 if (!originalUrl) {
                     updateLog(`Skipping item with no link: "${item.title}"`);
@@ -95,6 +101,7 @@ export async function curateFeedsAction(
                     continue;
                 }
                 
+                // Using Promise.all is faster, but serial execution is safer for rate limits.
                 const summaryResult = await summarizeArticle({ articleContent: articleContent.substring(0, 15000) });
                 const relevanceResult = await assessArticleRelevance({ articleContent: articleContent.substring(0, 15000) });
 
@@ -127,7 +134,11 @@ export async function curateFeedsAction(
                 updateLog(`No new articles to add from "${source.name}".`);
             }
         } catch (feedError) {
-            updateLog(`Error for source "${source.name}": ${(feedError as Error).message}`);
+            const errorMessage = (feedError as Error).message;
+            updateLog(`Error for source "${source.name}": ${errorMessage}`);
+            if (errorMessage.includes('RESOURCE_EXHAUSTED')) {
+                updateLog('Rate limit may have been reached. Continuing to next source.');
+            }
         }
     }
 
