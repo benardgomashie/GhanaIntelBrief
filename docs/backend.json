@@ -1,0 +1,383 @@
+{
+  "entities": {
+    "Article": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Article",
+      "type": "object",
+      "description": "Represents a news article aggregated from various sources, including AI-generated summaries and relevance assessments.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Article entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The headline or title of the news article."
+        },
+        "originalUrl": {
+          "type": "string",
+          "description": "The URL to the original, full-text version of the article.",
+          "format": "uri"
+        },
+        "publishedAt": {
+          "type": "string",
+          "description": "The original publication date and time of the article.",
+          "format": "date-time"
+        },
+        "aggregatedAt": {
+          "type": "string",
+          "description": "The date and time when the article was aggregated into the system.",
+          "format": "date-time"
+        },
+        "summary": {
+          "type": "string",
+          "description": "An AI-generated, concise 5-bullet point summary of the article's content."
+        },
+        "whyThisMattersExplanation": {
+          "type": "string",
+          "description": "An AI-generated explanation detailing why this article is relevant to Ghana's context (money, policy, opportunity, growth)."
+        },
+        "imageThumbnailUrl": {
+          "type": "string",
+          "description": "An optional URL for a thumbnail image associated with the article, used for display.",
+          "format": "uri"
+        },
+        "isRelevantMoney": {
+          "type": "boolean",
+          "description": "Indicates if the article is assessed by AI as relevant to 'money' in Ghana."
+        },
+        "isRelevantPolicy": {
+          "type": "boolean",
+          "description": "Indicates if the article is assessed by AI as relevant to 'policy' in Ghana."
+        },
+        "isRelevantOpportunity": {
+          "type": "boolean",
+          "description": "Indicates if the article is assessed by AI as relevant to 'opportunity' in Ghana."
+        },
+        "isRelevantGrowth": {
+          "type": "boolean",
+          "description": "Indicates if the article is assessed by AI as relevant to 'growth' in Ghana."
+        },
+        "sourceIds": {
+          "type": "array",
+          "description": "References to Source entities that are the original publishers of this article. (Relationship: Article N:N Source)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "categoryIds": {
+          "type": "array",
+          "description": "References to Category entities that classify this article. (Relationship: Article N:N Category)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "originalUrl",
+        "publishedAt",
+        "aggregatedAt",
+        "summary",
+        "whyThisMattersExplanation",
+        "isRelevantMoney",
+        "isRelevantPolicy",
+        "isRelevantOpportunity",
+        "isRelevantGrowth",
+        "sourceIds",
+        "categoryIds"
+      ]
+    },
+    "Source": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Source",
+      "type": "object",
+      "description": "Represents an external news provider (e.g., RSS feed, News API) from which articles are aggregated.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Source entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the news source (e.g., 'Joy News', 'GhanaWeb')."
+        },
+        "baseUrl": {
+          "type": "string",
+          "description": "The base URL of the source's website.",
+          "format": "uri"
+        },
+        "feedUrl": {
+          "type": "string",
+          "description": "The URL of the RSS feed if the source is an RSS feed, otherwise null.",
+          "format": "uri"
+        },
+        "sourceType": {
+          "type": "string",
+          "description": "The type of the source (e.g., 'RSS', 'NewsAPI', 'Manual')."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country where the news source is primarily based or focused."
+        },
+        "language": {
+          "type": "string",
+          "description": "The primary language of the news content from this source (e.g., 'en' for English)."
+        },
+        "lastFetchedAt": {
+          "type": "string",
+          "description": "The date and time when content was last successfully fetched from this source.",
+          "format": "date-time"
+        },
+        "articleIds": {
+          "type": "array",
+          "description": "References to Article entities that originated from this source. (Relationship: Source N:N Article)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "baseUrl",
+        "sourceType",
+        "country",
+        "language"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a classification category for articles, such as Business, Tech, or Policy.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the category (e.g., 'Business', 'Tech', 'Policy')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of what this category entails."
+        },
+        "iconUrl": {
+          "type": "string",
+          "description": "An optional URL for an icon representing this category, for UI display.",
+          "format": "uri"
+        },
+        "articleIds": {
+          "type": "array",
+          "description": "References to Article entities that belong to this category. (Relationship: Category N:N Article)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "NewsletterSubscription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NewsletterSubscription",
+      "type": "object",
+      "description": "Represents a user's subscription to the Ghana IntelBrief newsletter.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NewsletterSubscription entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the subscriber.",
+          "format": "email"
+        },
+        "frequency": {
+          "type": "string",
+          "description": "The preferred frequency of newsletter delivery (e.g., 'daily', 'weekly')."
+        },
+        "subscribedAt": {
+          "type": "string",
+          "description": "The date and time when the user subscribed to the newsletter.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the subscription is currently active or if the user has unsubscribed."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "frequency",
+        "subscribedAt",
+        "isActive"
+      ]
+    },
+    "SocialPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SocialPost",
+      "type": "object",
+      "description": "Represents a social media post automatically queued or generated for an article.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SocialPost entity."
+        },
+        "articleId": {
+          "type": "string",
+          "description": "Reference to the Article entity this social post promotes. (Relationship: Article 1:N SocialPost)"
+        },
+        "platform": {
+          "type": "string",
+          "description": "The social media platform for which the post is intended (e.g., 'Twitter', 'LinkedIn')."
+        },
+        "content": {
+          "type": "string",
+          "description": "The full text content of the social media post."
+        },
+        "scheduledFor": {
+          "type": "string",
+          "description": "The date and time when the social post is scheduled to be published.",
+          "format": "date-time"
+        },
+        "postedAt": {
+          "type": "string",
+          "description": "The date and time when the social post was actually published. Null if not yet posted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the social post (e.g., 'queued', 'pending_review', 'posted', 'failed')."
+        },
+        "manualReviewRequired": {
+          "type": "boolean",
+          "description": "Indicates if the social post requires manual review before publishing (e.g., for the initial months)."
+        }
+      },
+      "required": [
+        "id",
+        "articleId",
+        "platform",
+        "content",
+        "scheduledFor",
+        "status",
+        "manualReviewRequired"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/articles/{articleId}",
+        "definition": {
+          "entityName": "Article",
+          "schema": {
+            "$ref": "#/backend/entities/Article"
+          },
+          "description": "Publicly accessible aggregated news articles. Read-only for all users (authenticated/unauthenticated). Write access is restricted to internal system processes or administrators.",
+          "params": [
+            {
+              "name": "articleId",
+              "description": "The unique identifier of the article."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/sources/{sourceId}",
+        "definition": {
+          "entityName": "Source",
+          "schema": {
+            "$ref": "#/backend/entities/Source"
+          },
+          "description": "Publicly accessible news sources from which articles are aggregated. Read-only for all users. Write access is restricted to internal system processes or administrators.",
+          "params": [
+            {
+              "name": "sourceId",
+              "description": "The unique identifier of the news source."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Publicly accessible article classification categories. Read-only for all users. Write access is restricted to internal system processes or administrators.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique identifier of the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/newsletterSubscription",
+        "definition": {
+          "entityName": "NewsletterSubscription",
+          "schema": {
+            "$ref": "#/backend/entities/NewsletterSubscription"
+          },
+          "description": "A logged-in user's individual newsletter subscription. The document ID for each subscription in this subcollection MUST be the `userId`. This structure provides strong authorization independence, as the `userId` in the path directly corresponds to `request.auth.uid` for ownership checks.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this subscription."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/socialPosts/{socialPostId}",
+        "definition": {
+          "entityName": "SocialPost",
+          "schema": {
+            "$ref": "#/backend/entities/SocialPost"
+          },
+          "description": "System-generated social media posts related to articles. Access for read, write, and delete operations is strictly restricted to internal system processes or administrators.",
+          "params": [
+            {
+              "name": "socialPostId",
+              "description": "The unique identifier of the social media post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "RoleAdmin",
+          "schema": {
+            "$ref": "#/backend/entities/RoleAdmin"
+          },
+          "description": "A collection used for Database Access Control (DBAC). The mere existence of a document at `/roles_admin/{userId}` grants administrative privileges to the user identified by `userId`.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who is assigned the 'admin' role."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for Ghana IntelBrief prioritizes security, scalability, and debuggability by strictly adhering to the core design principles. \n\n**Authorization Independence (CRITICAL):**\n1.  **Public Collections (`/articles`, `/sources`, `/categories`):** These collections are designed for global read access (authenticated or unauthenticated users). Since all documents within these collections are publicly readable, no authorization checks requiring `get()` operations are needed. Read rules simply allow all reads.\n2.  **User-Owned Data (`/users/{userId}/newsletterSubscription`):** User-specific data like newsletter subscriptions are placed in subcollections nested under `/users/{userId}`. This path-based ownership ensures that the authenticated user's ID (`request.auth.uid`) can be directly compared with the `userId` in the path. This eliminates the need for any `get()` operations to verify ownership, making rules simple (`request.auth.uid == userId`) and atomic.\n3.  **Admin/System Data (`/socialPosts`):** Collections like `/socialPosts` are restricted to administrators. Authorization is determined by checking the *existence* of a document in the `/roles_admin/{userId}` collection for the `request.auth.uid`. While `exists()` is used, it's not a `get()` on the resource itself to infer permissions, but a lookup in a dedicated roles collection, which is an accepted and performant pattern for DBAC.\n\n**QAPs (Rules are not Filters):**\n1.  **Public Collections:** For `/articles`, `/sources`, and `/categories`, any `list` operation will return only publicly available documents, all of which are authorized for read. The rules are not attempting to filter unauthorized documents from a query result.\n2.  **User-Owned Collection:** For `/users/{userId}/newsletterSubscription`, a user querying `/users/$(request.auth.uid)/newsletterSubscription` will only retrieve their own authorized subscription data. There's no filtering necessary because the path itself scopes the query to authorized data.\n3.  **Admin/System Collections:** `list` operations on `/socialPosts` will only be permitted for users who are authenticated as administrators. All documents within this collection are intended for admin access, so no rule-based filtering of query results is needed.\n\n**Structural Segregation:**\n*   Publicly accessible data (`articles`, `sources`, `categories`) is kept separate from user-specific data (`newsletterSubscription`) and system-controlled data (`socialPosts`, `roles_admin`). Each collection (or subcollection) maintains a homogeneous security posture, simplifying security rule definition considerably. For example, `/articles` has universal read, while `/users/{userId}/newsletterSubscription` has owner-only R/W.\n\n**Access Modeling:**\n*   **Private Data:** The `/users/{userId}/newsletterSubscription` path follows the recommended pattern for path-based ownership of user-specific data.\n*   **Global Roles (DBAC):** Admin roles are managed through the `/roles_admin/{userId}` collection, utilizing the \"Existence over Content\" strategy for simple and robust rule validation."
+  }
+}

@@ -1,0 +1,182 @@
+/**
+ * Core Philosophy:
+ * This ruleset enforces a tiered security model designed for a content aggregation platform.
+ * It strictly separates data into three categories:
+ * 1. Public Content: Data like articles, sources, and categories are globally readable by anyone,
+ *    including unauthenticated users. Writes to this data are denied from the client-side,
+ *    assuming they are managed by a trusted backend service or admin role.
+ * 2. Private User Data: User-specific information, such as newsletter subscriptions, is stored
+ *    in a user-owned data tree. Access is strictly limited to the authenticated owner of that data.
+ * 3. Administrative Data: System-level data, such as social media post queues and role management,
+ *    is locked down and accessible only to users designated as administrators.
+ *
+ * Data Structure:
+ * The data is organized into top-level collections based on its security context. Public data
+ * resides in collections like `/articles`, `/sources`, and `/categories`. All private user data
+ * is nested under `/users/{userId}`, ensuring a clear and secure ownership boundary. Administrative
+ * roles are managed in a separate `/roles_admin` collection for fast, secure lookups.
+ *
+ * Key Security Decisions:
+ * - Admin Access: A user is considered an administrator if a document with their UID exists in the
+ *   `/roles_admin` collection. This allows for fast, secure role checks using `exists()`.
+ * - Client-Side Writes: Writes to public content and system collections (e.g., `/articles`, `/socialPosts`)
+ *   are restricted to admin users, with the expectation that most data creation is handled by a
+ *   trusted server environment using the Admin SDK. The `/roles_admin` collection is not writable from clients at all.
+ * - User Data Isolation: All rules for paths under `/users/{userId}` use the `userId` from the path
+ *   as the sole source of truth for ownership, preventing any user from accessing another's data.
+ * - No User Listing: The rules do not permit querying the top-level `/users` collection,
+ *   preventing enumeration of all platform users.
+ *
+ * Denormalization for Authorization:
+ * This ruleset avoids slow and costly `get()` calls for authorization.
+ * - Path-Based Ownership: For user data like `/users/{userId}/newsletterSubscription`, ownership is
+ *   determined directly from the `userId` in the document path, requiring no extra reads.
+ * - Role-Based Lookups: Administrative status is determined by checking for the existence of a
+ *   document in `/roles_admin/{userId}`, a highly performant and secure pattern for managing global roles.
+ *
+ * Structural Segregation:
+ * The schema is strictly segregated. Publicly readable article data is in `/articles`, while
+ * private user subscription data is in `/users/{userId}/newsletterSubscription`. This separation
+ * ensures that a query on a public collection can never accidentally expose private data,
+ * simplifying rules and improving performance.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------------
+    // Helper Functions
+    // --------------------------------
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the document being operated on already exists in Firestore.
+     * This is a critical guard for all update and delete operations.
+     */
+    function documentExists() {
+      return resource != null;
+    }
+
+    /**
+     * Checks if the requesting user has an admin role.
+     * The role is granted by the existence of a document in the /roles_admin collection.
+     */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * A composite helper that verifies ownership for an existing document.
+     * Used to secure update and delete operations on user-owned data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && documentExists();
+    }
+
+    // --------------------------------
+    // Public Collections
+    // --------------------------------
+
+    /**
+     * @description Publicly readable articles. Writes are restricted to admins.
+     * @path /articles/{articleId}
+     * @allow (get) Any user, signed in or not, can read an article.
+     * @deny (create) A non-admin user attempts to create a new article.
+     * @principle Public read access for content, with writes controlled by a privileged role.
+     */
+    match /articles/{articleId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && documentExists();
+    }
+
+    /**
+     * @description Publicly readable news sources. Writes are restricted to admins.
+     * @path /sources/{sourceId}
+     * @allow (list) Any client can query the list of news sources.
+     * @deny (update) An anonymous user attempts to update a source document.
+     * @principle Public read access for content, with writes controlled by a privileged role.
+     */
+    match /sources/{sourceId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && documentExists();
+    }
+
+    /**
+     * @description Publicly readable article categories. Writes are restricted to admins.
+     * @path /categories/{categoryId}
+     * @allow (get) Any user can fetch a specific category document.
+     * @deny (delete) A signed-in, non-admin user attempts to delete a category.
+     * @principle Public read access for content, with writes controlled by a privileged role.
+     */
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && documentExists();
+    }
+
+    // --------------------------------
+    // User-Specific Data
+    // --------------------------------
+
+    /**
+     * @description A user's private newsletter subscription settings.
+     * @path /users/{userId}/newsletterSubscription/{subscriptionId}
+     * @allow (create) An authenticated user (UID: 'user123') creates their own subscription document at /users/user123/newsletterSubscription/user123.
+     * @deny (get) A user (UID: 'user456') attempts to read from /users/user123/newsletterSubscription/user123.
+     * @principle Enforces strict data ownership using the user's UID in the document path.
+     */
+    match /users/{userId}/newsletterSubscription/{subscriptionId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // --------------------------------
+    // Admin & System Collections
+    // --------------------------------
+
+    /**
+     * @description System-generated social media posts. Accessible only by admins.
+     * @path /socialPosts/{socialPostId}
+     * @allow (list) An admin user queries the collection of social posts.
+     * @deny (get) A non-admin authenticated user attempts to read a social post document.
+     * @principle Restricts access to system-level data to privileged admin roles.
+     */
+    match /socialPosts/{socialPostId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && documentExists();
+    }
+
+    /**
+     * @description Defines user roles. Only admins can read. No client can write.
+     * @path /roles_admin/{userId}
+     * @allow (get) An admin user (UID: 'admin1') reads the role document for another user at /roles_admin/user123.
+     * @deny (create) Any user, including an admin, attempts to create a role document from the client.
+     * @principle Protects critical authorization data from any client-side modification.
+     */
+    match /roles_admin/{userId} {
+      allow get, list: if isAdmin();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
