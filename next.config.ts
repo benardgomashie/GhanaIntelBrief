@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ['firebase', '@firebase/util', '@firebase/auth'],
+  serverExternalPackages: ['@genkit-ai/google-genai', 'genkit'],
   images: {
     remotePatterns: [
       {
@@ -29,6 +31,41 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@firebase/util': require.resolve('@firebase/util'),
+      };
+    } else {
+      // Exclude server-only packages from client bundle
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@genkit-ai/google-genai': false,
+        'genkit': false,
+      };
+    }
+    
+    // Ignore postinstall.mjs file
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+    };
+    
+    config.module = {
+      ...config.module,
+      exprContextCritical: false,
+    };
+    
+    // Ignore genkit warnings
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /node_modules\/@genkit-ai/ },
+      { module: /node_modules\/genkit/ },
+    ];
+
+    return config;
   },
 };
 
