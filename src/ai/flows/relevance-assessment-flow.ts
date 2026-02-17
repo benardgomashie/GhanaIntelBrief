@@ -16,11 +16,15 @@ const RelevanceAssessmentInputSchema = z.object({
 export type RelevanceAssessmentInput = z.infer<typeof RelevanceAssessmentInputSchema>;
 
 const RelevanceAssessmentOutputSchema = z.object({
-  relevanceExplanation: z
+  whyThisMattersExplanation: z
     .string()
     .describe(
       "A concise explanation (2-3 sentences) of why the article matters in terms of Ghana's money, policy, opportunity, and growth."
     ),
+  isRelevantMoney: z.boolean().describe("True if the article is assessed by AI as relevant to 'money' in Ghana."),
+  isRelevantPolicy: z.boolean().describe("True if the article is assessed by AI as relevant to 'policy' in Ghana."),
+  isRelevantOpportunity: z.boolean().describe("True if the article is assessed by AI as relevant to 'opportunity' in Ghana."),
+  isRelevantGrowth: z.boolean().describe("True if the article is assessed by AI as relevant to 'growth' in Ghana."),
 });
 export type RelevanceAssessmentOutput = z.infer<typeof RelevanceAssessmentOutputSchema>;
 
@@ -32,9 +36,14 @@ const relevanceAssessmentPrompt = ai.definePrompt({
   name: 'relevanceAssessmentPrompt',
   input: {schema: RelevanceAssessmentInputSchema},
   output: {schema: RelevanceAssessmentOutputSchema},
-  prompt: `You are an AI assistant specialized in analyzing news articles related to Ghana. Your task is to provide a concise explanation (2-3 sentences) of why a given article matters in terms of Ghana's money, policy, opportunity, and growth.
+  prompt: `You are an AI assistant specialized in analyzing news articles related to Ghana. Your task is to analyze the article and determine its relevance to Ghana's key development pillars: Money, Policy, Opportunity, and Growth.
 
-Here is the article content:
+Based on the article content, provide the following in JSON format:
+1.  A concise explanation (2-3 sentences) for 'whyThisMattersExplanation', explaining the article's significance.
+2.  A boolean value for 'isRelevantMoney'.
+3.  A boolean value for 'isRelevantPolicy'.
+4.  A boolean value for 'isRelevantOpportunity'.
+5.  A boolean value for 'isRelevantGrowth'.
 
 Article: {{{articleContent}}} `,
 });

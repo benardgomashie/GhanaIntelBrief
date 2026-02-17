@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Database, TestTube2 } from 'lucide-react';
+import { Database, TestTube2, Rss } from 'lucide-react';
 import { NewsletterForm } from './newsletter-form';
 import { Button } from './ui/button';
 import { useFirestore } from '@/firebase';
@@ -50,6 +50,15 @@ export function Header() {
         </div>
         <div className="flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row">
           <NewsletterForm />
+          <Link href="/curate" passHref>
+            <Button
+              variant="outline"
+              className="w-full justify-center font-semibold sm:w-auto"
+            >
+              <Rss className="mr-2 h-4 w-4" />
+              Curate Feeds
+            </Button>
+          </Link>
           <Link href="/analyze" passHref>
             <Button
               variant="outline"

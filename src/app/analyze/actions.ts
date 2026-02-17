@@ -42,14 +42,14 @@ export async function analyzeArticleAction(
       assessArticleRelevance({ articleContent }),
     ]);
 
-    if (!summaryResult.summary || !relevanceResult.relevanceExplanation) {
+    if (!summaryResult.summary || !relevanceResult.whyThisMattersExplanation) {
       throw new Error('AI generation failed to produce complete results.');
     }
 
     return {
       message: 'Analysis successful.',
       summary: summaryResult.summary,
-      relevance: relevanceResult.relevanceExplanation,
+      relevance: relevanceResult.whyThisMattersExplanation,
     };
   } catch (error) {
     console.error('AI Analysis Error:', error);
