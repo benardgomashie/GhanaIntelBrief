@@ -62,7 +62,16 @@ function extractImageUrl(item: any): string | undefined {
 
 async function handleCuration(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+  
+  console.log('[CRON] Auth check:', {
+    received: authHeader,
+    expected: expectedAuth,
+    secretLength: process.env.CRON_SECRET?.length,
+    match: authHeader === expectedAuth
+  });
+  
+  if (authHeader !== expectedAuth) {
     return new Response('Unauthorized', {
       status: 401,
     });
