@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { useDoc, useFirestore } from '@/firebase';
 import type { Article } from '@/app/lib/types';
@@ -16,18 +16,25 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const [articleId, setArticleId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     // Unwrap params since it's a Promise in Next.js 15
     Promise.resolve(params).then((resolvedParams) => {
       setArticleId(resolvedParams.id);
+      setIsInitializing(false);
     });
   }, [params]);
 
-  const articleRef = articleId && firestore ? doc(firestore, 'articles', articleId) : null;
+  const articleRef = useMemo(
+    () => articleId && firestore ? doc(firestore, 'articles', articleId) : null,
+    [articleId, firestore]
+  );
+  
   const { data: article, isLoading } = useDoc<Article>(articleRef);
 
-  if (isLoading || !articleId) {
+  // Only show loading skeleton during initial param loading, not during Firestore fetch
+  if (isInitializing) {
     return (
       <div className="mx-auto max-w-4xl">
         <Skeleton className="mb-6 h-8 w-32" />
@@ -40,7 +47,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!article) {
+  if (!article && !isLoading) {
     return (
       <div className="mx-auto max-w-4xl text-center">
         <h1 className="mb-4 text-3xl font-bold">Article Not Found</h1>
@@ -58,10 +65,24 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     );
   }
 
+  // Still loading article data
+  if (!article) {
+    return (
+      <div className="mx-auto max-w-4xl">
+        <Skeleton className="mb-6 h-8 w-32" />
+        <Skeleton className="mb-4 h-96 w-full" />
+        <Skeleton className="mb-4 h-12 w-3/4" />
+        <Skeleton className="mb-2 h-6 w-full" />
+        <Skeleton className="mb-2 h-6 w-full" />
+        <Skeleton className="h-6 w-2/3" />
+      </div>
+    );
+  }
+
   const summaryPoints = article.summary
-    .split('\n')
+    ?.split('\n')
     .map((point) => point.replace(/^[-•]\s*/, '').trim())
-    .filter((p) => p.length > 0);
+    .filter((p) => p.length > 0) || [];
 
   const relevanceTags = [
     article.isRelevantMoney && { label: 'Money', color: 'bg-green-500/10 text-green-500' },
@@ -71,8 +92,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   ].filter(Boolean);
 
   return (
-    <div className="mx-auto max-w-4xl">
-      {/* Structured Data for SEO */}
+    <div className="mx-auto max-w-4xl animate-in fade-in duration-300">{/* Structured Data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -113,7 +133,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       <Card className="overflow-hidden">
         {/* Hero Image */}
         {article.imageThumbnailUrl && !imageError ? (
-          <div className="relative h-96 w-full">
+          <div className="relative h-96 w-full" key="article-image">
             <Image
               src={article.imageThumbnailUrl}
               alt={article.title}
@@ -121,12 +141,16 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               priority
               sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
-              onError={() => setImageError(true)}
+              onError={() => {
+                if (!imageError) {
+                  setImageError(true);
+                }
+              }}
               unoptimized={article.imageThumbnailUrl.includes('http://') || article.imageThumbnailUrl.includes('myjoyonline.com')}
             />
           </div>
         ) : (
-          <div className="flex h-96 w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700">
+          <div className="flex h-96 w-full items-center justify-center bg-gradient-to-br from-yellow-600 via-red-600 to-green-700" key="article-placeholder">
             <div className="text-center px-6">
               <ScrollText className="mx-auto h-20 w-20 text-white/90 mb-4" />
               <p className="text-xl font-semibold text-white/80">Ghana IntelBrief</p>
