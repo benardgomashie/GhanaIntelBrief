@@ -32,9 +32,16 @@ pnpm-debug.log*
 .env.test.local
 .env
 
+# deployment scripts (contain secrets)
+add-env-to-vercel*.ps1
+add-env-to-vercel*.bat
+add-env*.cmd
+vercel-commands.txt
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local

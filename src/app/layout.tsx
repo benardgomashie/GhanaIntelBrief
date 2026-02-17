@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Ghana IntelBrief',
   description:
     "Aggregated news and AI-powered insights on Ghana's business, tech, and policy landscape.",
+  other: {
+    'google-adsense-account': 'ca-pub-6905498298815487',
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +30,7 @@ export default function RootLayout({
         />
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6905498298815487"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
