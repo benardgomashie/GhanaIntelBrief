@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "tech-currency",
+      "description": "Digital currency concept art on a smartphone",
+      "imageUrl": "https://images.unsplash.com/photo-1660139099083-03e0777ac6a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkaWdpdGFsJTIwY3VycmVuY3l8ZW58MHx8fHwxNzcxMjc4MjU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital currency"
+    },
+    {
+      "id": "business-investment",
+      "description": "Modern cityscape of Accra with cranes",
+      "imageUrl": "https://images.unsplash.com/photo-1529400971008-f566de0e6dfc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxidXNpbmVzcyUyMGludmVzdG1lbnR8ZW58MHx8fHwxNzcxMzE1MDQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "business investment"
+    },
+    {
+      "id": "policy-education",
+      "description": "Students in a classroom using tablets",
+      "imageUrl": "https://images.unsplash.com/photo-1603354350317-6f7aaa5911c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxlZHVjYXRpb24lMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc3MTMxNTA0NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "education technology"
+    },
+    {
+      "id": "agri-tech",
+      "description": "Drone flying over a lush green farm",
+      "imageUrl": "https://images.unsplash.com/photo-1692369584496-3216a88f94c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhZ3JpY3VsdHVyZSUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzcxMzE1MDQ0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "agriculture technology"
+    }
+  ]
 }
