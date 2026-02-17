@@ -76,7 +76,8 @@ export function CurationForm() {
 
     const parser = new Parser();
     let totalNewArticles = 0;
-    const ARTICLES_PER_SOURCE = 2;
+    const MAX_AI_CALLS_PER_RUN = 2; // Global limit for AI calls to avoid rate limiting
+    let aiCallsThisRun = 0;
 
     try {
       const sourcesRef = collection(firestore, 'sources');
@@ -89,6 +90,11 @@ export function CurationForm() {
       const articlesCollectionRef = collection(firestore, 'articles');
 
       for (const source of sources) {
+        if (aiCallsThisRun >= MAX_AI_CALLS_PER_RUN) {
+          updateLog('Reached global AI call limit for this run. Please run again to process more articles.');
+          break; // Stop processing more sources
+        }
+        
         if (!source.feedUrl) {
           updateLog(`Skipping source "${source.name}" - no feed URL.`);
           continue;
@@ -105,9 +111,9 @@ export function CurationForm() {
           let articlesInBatch = 0;
 
           for (const item of feed.items) {
-            if (articlesInBatch >= ARTICLES_PER_SOURCE) {
-              updateLog(`Reached article limit for "${source.name}" for this run.`);
-              break;
+            if (aiCallsThisRun >= MAX_AI_CALLS_PER_RUN) {
+              updateLog(`Reached article limit for this run.`);
+              break; // Stop processing items in this feed
             }
 
             const originalUrl = item.link;
@@ -136,6 +142,7 @@ export function CurationForm() {
             }
 
             const analysisResult = await processArticle({ articleContent: articleContent.substring(0, 15000) });
+            aiCallsThisRun++; // Increment after successful AI call
 
             const newArticleRef = doc(articlesCollectionRef);
             const newArticle: Article = {
