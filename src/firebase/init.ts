@@ -1,7 +1,8 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -28,6 +29,16 @@ export function initializeFirebase() {
   }
   // If already initialized, return the SDKs with the already initialized App
   return getSdks(getApp());
+}
+
+export async function getFirebaseAnalytics(firebaseApp: FirebaseApp): Promise<Analytics | null> {
+  try {
+    const supported = await isSupported();
+    if (supported) return getAnalytics(firebaseApp);
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {

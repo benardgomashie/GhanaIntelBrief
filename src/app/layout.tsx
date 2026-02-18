@@ -5,6 +5,7 @@ import { Header } from '@/components/header';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { WhatsAppButton } from '@/components/whatsapp-button';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
+import { AnalyticsProvider } from '@/components/analytics-provider';
 
 export const metadata: Metadata = {
   title: {
@@ -137,6 +138,7 @@ export default function RootLayout({
           </div>
           <WhatsAppButton />
           <PwaInstallPrompt />
+          <AnalyticsProvider />
           <Toaster />
         </FirebaseClientProvider>
       </body>
