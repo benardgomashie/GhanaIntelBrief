@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { WhatsAppButton } from '@/components/whatsapp-button';
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 
 export const metadata: Metadata = {
   title: {
@@ -135,6 +136,7 @@ export default function RootLayout({
             </main>
           </div>
           <WhatsAppButton />
+          <PwaInstallPrompt />
           <Toaster />
         </FirebaseClientProvider>
       </body>
