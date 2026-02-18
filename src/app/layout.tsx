@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { WhatsAppButton } from '@/components/whatsapp-button';
 
 export const metadata: Metadata = {
   title: {
@@ -133,6 +134,7 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          <WhatsAppButton />
           <Toaster />
         </FirebaseClientProvider>
       </body>
