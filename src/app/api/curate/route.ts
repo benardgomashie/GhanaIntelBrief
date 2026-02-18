@@ -89,8 +89,41 @@ function extractImageUrl(item: any): string | undefined {
   if (typeof item.image === 'string') {
     return item.image;
   }
+
+  // 7. description field sometimes contains an <img>
+  const desc = item.description || '';
+  const descImgMatch = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (descImgMatch?.[1]) {
+    return descImgMatch[1];
+  }
   
   return undefined;
+}
+
+// Last-resort: fetch the article page and pull the og:image / twitter:image meta tag
+async function scrapeOgImage(articleUrl: string): Promise<string | undefined> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const res = await fetch(articleUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GhanaIntelBrief/1.0)' },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return undefined;
+    const html = await res.text();
+    // og:image
+    const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+      ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    if (ogMatch?.[1]) return ogMatch[1];
+    // twitter:image
+    const twMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
+      ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+    if (twMatch?.[1]) return twMatch[1];
+    return undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 async function handleCuration(request: NextRequest) {
@@ -110,7 +143,15 @@ async function handleCuration(request: NextRequest) {
     });
   }
 
-  const parser = new Parser();
+  const parser = new Parser({
+    customFields: {
+      item: [
+        ['media:content', 'media:content', { keepArray: true }],
+        ['media:thumbnail', 'media:thumbnail'],
+        ['content:encoded', 'content:encoded'],
+      ],
+    },
+  });
 
   try {
     const sourcesRef = adminFirestore.collection('sources');
@@ -163,8 +204,17 @@ async function handleCuration(request: NextRequest) {
 
           const analysisResult = await processArticle({ articleContent: articleContent.substring(0, 15000) });
           
-          // Extract image from RSS feed
-          const imageUrl = extractImageUrl(item);
+          // Extract image from RSS feed, fall back to scraping og:image from article page
+          let imageUrl = extractImageUrl(item);
+          if (!imageUrl && originalUrl) {
+            console.log(`[CRON] No RSS image found, scraping og:image from article page...`);
+            imageUrl = await scrapeOgImage(originalUrl);
+            if (imageUrl) {
+              console.log(`[CRON] og:image found: ${imageUrl.substring(0, 80)}`);
+            } else {
+              console.log(`[CRON] No og:image found either, will use placeholder on frontend.`);
+            }
+          }
           
           console.log('[CRON] Analysis result:', {
             provider: analysisResult.provider,
