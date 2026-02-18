@@ -13,6 +13,53 @@ function extractTextFromHtml(html: string): string {
   return cleanHtml;
 }
 
+// Quality filter to reject irrelevant or low-quality articles
+function isArticleRelevant(title: string, content: string, analysisResult: any): boolean {
+  // Must have at least ONE relevance flag set to true
+  const hasRelevanceFlag = 
+    analysisResult.isRelevantMoney ||
+    analysisResult.isRelevantPolicy ||
+    analysisResult.isRelevantOpportunity ||
+    analysisResult.isRelevantGrowth;
+  
+  if (!hasRelevanceFlag) {
+    console.log('[FILTER] Rejected: No relevance flags set');
+    return false;
+  }
+
+  // Reject if title or content contains gossip/entertainment keywords
+  const irrelevantKeywords = [
+    'wifee', 'wife is dangerous', 'gossip', 'celebrity', 'dating',
+    'relationship', 'marriage drama', 'cheating', 'affair',
+    'useless column', 'entertainment', 'showbiz', 'nollywood',
+    'i told you but i have forgotten', 'akwele waabi',
+    'hot gossip', 'bedroom', 'scandal', 'divorce drama'
+  ];
+
+  const titleLower = title.toLowerCase();
+  const contentLower = content.toLowerCase().substring(0, 500);
+  
+  for (const keyword of irrelevantKeywords) {
+    if (titleLower.includes(keyword) || contentLower.includes(keyword)) {
+      console.log(`[FILTER] Rejected: Contains irrelevant keyword "${keyword}"`);
+      return false;
+    }
+  }
+
+  // Reject if summary or explanation is too short or generic
+  if (!analysisResult.summary || analysisResult.summary.length < 50) {
+    console.log('[FILTER] Rejected: Summary too short');
+    return false;
+  }
+
+  if (!analysisResult.whyThisMattersExplanation || analysisResult.whyThisMattersExplanation.length < 30) {
+    console.log('[FILTER] Rejected: Explanation too short');
+    return false;
+  }
+
+  return true;
+}
+
 function extractImageUrl(item: any): string | undefined {
   // Try various RSS image fields in order of preference
   
@@ -145,6 +192,12 @@ async function handleCuration(request: NextRequest) {
               growth: analysisResult.isRelevantGrowth
             }
           });
+
+          // QUALITY FILTER: Check if article is relevant before saving
+          if (!isArticleRelevant(item.title || '', articleContent, analysisResult)) {
+            console.log(`[CRON] Skipping irrelevant article: "${item.title?.substring(0, 50)}..."`);
+            continue;
+          }
           
           const newArticleRef = articlesCollectionRef.doc();
           const newArticle: Article = {
