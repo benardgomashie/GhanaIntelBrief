@@ -15,48 +15,34 @@ function extractTextFromHtml(html: string): string {
 
 // Quality filter to reject irrelevant or low-quality articles
 function isArticleRelevant(title: string, content: string, analysisResult: any): boolean {
-  // Must have at least ONE relevance flag set to true
-  const hasRelevanceFlag = 
-    analysisResult.isRelevantMoney ||
-    analysisResult.isRelevantPolicy ||
-    analysisResult.isRelevantOpportunity ||
-    analysisResult.isRelevantGrowth;
-  
-  if (!hasRelevanceFlag) {
-    console.log('[FILTER] Rejected: No relevance flags set');
-    return false;
-  }
-
-  // Reject if title or content contains gossip/entertainment keywords
-  const irrelevantKeywords = [
-    'wifee', 'wife is dangerous', 'gossip', 'celebrity', 'dating',
-    'relationship', 'marriage drama', 'cheating', 'affair',
-    'useless column', 'entertainment', 'showbiz', 'nollywood',
-    'i told you but i have forgotten', 'akwele waabi',
-    'hot gossip', 'bedroom', 'scandal', 'divorce drama'
+  // Hard reject: title contains clear gossip/entertainment keywords
+  const irrelevantTitleKeywords = [
+    'useless column', 'wifee', 'wife is dangerous', 'how to make your wife',
+    'bedroom secrets', 'hot gossip', 'celebrity drama'
   ];
-
   const titleLower = title.toLowerCase();
-  const contentLower = content.toLowerCase().substring(0, 500);
-  
-  for (const keyword of irrelevantKeywords) {
-    if (titleLower.includes(keyword) || contentLower.includes(keyword)) {
-      console.log(`[FILTER] Rejected: Contains irrelevant keyword "${keyword}"`);
+  for (const keyword of irrelevantTitleKeywords) {
+    if (titleLower.includes(keyword)) {
+      console.log(`[FILTER] Rejected by title keyword "${keyword}": "${title}"`);
       return false;
     }
   }
 
-  // Reject if summary or explanation is too short or generic
-  if (!analysisResult.summary || analysisResult.summary.length < 50) {
-    console.log('[FILTER] Rejected: Summary too short');
+  // Hard reject: fallback provider with ZERO relevance flags AND generic placeholder text
+  const isGenericFallback = 
+    analysisResult.provider === 'fallback' &&
+    !analysisResult.isRelevantMoney &&
+    !analysisResult.isRelevantPolicy &&
+    !analysisResult.isRelevantOpportunity &&
+    !analysisResult.isRelevantGrowth &&
+    analysisResult.whyThisMattersExplanation?.includes('Check back for detailed');
+  
+  if (isGenericFallback) {
+    console.log(`[FILTER] Rejected: Generic fallback with no relevance flags`);
     return false;
   }
 
-  if (!analysisResult.whyThisMattersExplanation || analysisResult.whyThisMattersExplanation.length < 30) {
-    console.log('[FILTER] Rejected: Explanation too short');
-    return false;
-  }
-
+  // Accept everything else — let Gemini's relevance flags be the main gate
   return true;
 }
 
