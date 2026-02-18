@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { doc } from 'firebase/firestore';
-import { useDoc, useFirestore } from '@/firebase';
+import { doc, collection, query, orderBy, limit, where } from 'firebase/firestore';
+import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { Article } from '@/app/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ArticleCard } from '@/components/article-card';
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
@@ -32,6 +33,23 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   );
   
   const { data: article, isLoading } = useDoc<Article>(articleRef);
+
+  // Fetch related articles (recent articles excluding current one)
+  const relatedArticlesQuery = useMemoFirebase(
+    () => firestore && articleId 
+      ? query(
+          collection(firestore, 'articles'),
+          orderBy('aggregatedAt', 'desc'),
+          limit(4)
+        )
+      : null,
+    [firestore, articleId]
+  );
+  
+  const { data: relatedArticles } = useCollection<Article>(relatedArticlesQuery);
+  
+  // Filter out the current article from related articles
+  const filteredRelatedArticles = relatedArticles?.filter(a => a.id !== articleId).slice(0, 3);
 
   // Only show loading skeleton during initial param loading, not during Firestore fetch
   if (isInitializing) {
@@ -240,6 +258,20 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Related Articles */}
+      {filteredRelatedArticles && filteredRelatedArticles.length > 0 && (
+        <div className="mt-12">
+          <h2 className="mb-6 font-headline text-2xl font-bold tracking-tight">
+            Related Articles
+          </h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {filteredRelatedArticles.map((relatedArticle) => (
+              <ArticleCard key={relatedArticle.id} article={relatedArticle} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

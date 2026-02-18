@@ -30,6 +30,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Ghana IntelBrief',
+  },
   openGraph: {
     title: 'Ghana IntelBrief - AI-Powered Ghana Business News & Insights',
     description: "Stay ahead with AI-curated news on Ghana's business, tech, and policy landscape.",
@@ -83,6 +89,35 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
           rel="stylesheet"
+        />
+        {/* PWA Meta Tags */}
+        <meta name="application-name" content="Ghana IntelBrief" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="GhanaIntel" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#fbbf24" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('SW registered: ', registration);
+                    },
+                    function(err) {
+                      console.log('SW registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
         />
         <script
           async
