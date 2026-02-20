@@ -5,11 +5,12 @@ let app: App;
 let firestore: Firestore;
 
 // Initialize Firebase Admin SDK
-if (getApps().length === 0) {
+const existingApps = getApps();
+if (existingApps.length === 0) {
   // Check if we have explicit credentials (for local development)
   if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
     const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-    
+
     app = initializeApp({
       projectId: projectId,
       credential: cert({
@@ -23,11 +24,14 @@ if (getApps().length === 0) {
     // Fall back to default credentials (works in Vercel/Firebase App Hosting)
     app = initializeApp();
   }
-} else {
-  app = getApps()[0];
-}
 
-firestore = getFirestore(app);
-firestore.settings({ ignoreUndefinedProperties: true });
+  // Only call settings() on a freshly initialised instance — calling it again
+  // on an existing instance (e.g. after a hot-reload in dev) throws an error.
+  firestore = getFirestore(app);
+  firestore.settings({ ignoreUndefinedProperties: true });
+} else {
+  app = existingApps[0];
+  firestore = getFirestore(app);
+}
 
 export { app as adminApp, firestore as adminFirestore };

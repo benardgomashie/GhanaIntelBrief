@@ -12,47 +12,16 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@genkit-ai/google-genai', 'genkit'],
   images: {
     remotePatterns: [
+      // Allow all HTTPS image sources — necessary for a news aggregator pulling
+      // thumbnails from many different publisher domains.
       {
         protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
+        hostname: '**',
       },
+      // Allow HTTP only for sources that are known to serve over plain HTTP.
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.myjoyonline.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.graphic.com.gh',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.ghanaweb.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'citinewsroom.com',
-        port: '',
-        pathname: '/**',
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },

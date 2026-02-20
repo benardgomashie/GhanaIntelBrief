@@ -1,5 +1,6 @@
 export type Article = {
   id: string;
+  slug: string;
   title: string;
   originalUrl: string;
   publishedAt: string;

@@ -1,9 +1,11 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { adminFirestore } from '@/lib/firebase-admin';
 import Parser from 'rss-parser';
 import type { Article, Source } from '@/app/lib/types';
+import { slugify } from '@/lib/slugify';
 import { processArticle } from '@/ai/flows/article-processing-flow';
 
 function extractTextFromHtml(html: string): string {
@@ -238,6 +240,7 @@ async function handleCuration(request: NextRequest) {
           const newArticleRef = articlesCollectionRef.doc();
           const newArticle: Article = {
             id: newArticleRef.id,
+            slug: slugify(item.title || 'article'),
             title: item.title || 'No Title',
             originalUrl: originalUrl,
             publishedAt: item.isoDate || new Date().toISOString(),
@@ -264,7 +267,12 @@ async function handleCuration(request: NextRequest) {
           });
 
           await newArticleRef.set(newArticle);
-          
+
+          // Immediately bust the homepage and sitemap ISR caches so the new
+          // article is discoverable by crawlers without waiting for TTL expiry.
+          revalidatePath('/');
+          revalidatePath('/sitemap.xml');
+
           console.log(`[CRON] Successfully added one new article: "${newArticle.title}"`);
           newArticlesTitles.push(newArticle.title);
           

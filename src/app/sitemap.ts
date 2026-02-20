@@ -1,8 +1,11 @@
 import { MetadataRoute } from 'next';
 import { adminFirestore } from '@/lib/firebase-admin';
 import type { Article } from '@/app/lib/types';
+import { slugify } from '@/lib/slugify';
 
-export const revalidate = 3600; // Revalidate every hour
+// On-demand revalidation (revalidatePath) is triggered from /api/curate on
+// each new article. This TTL is a safety-net fallback only.
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.ghanaintelbrief.site';
@@ -39,8 +42,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const articlePages: MetadataRoute.Sitemap = articlesSnapshot.docs.map((doc) => {
       const article = doc.data() as Article;
+      const slug = article.slug || slugify(article.title);
       return {
-        url: `${baseUrl}/article/${article.id}`,
+        url: `${baseUrl}/article/${article.id}/${slug}`,
         lastModified: new Date(article.aggregatedAt),
         changeFrequency: 'monthly' as const,
         priority: 0.6,
