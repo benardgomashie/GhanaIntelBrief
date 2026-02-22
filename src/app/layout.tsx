@@ -73,6 +73,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
+    google: 'c5119f3d669954d2',
     other: {
       'google-adsense-account': 'ca-pub-6905498298815487',
     },

@@ -21,8 +21,14 @@ if (existingApps.length === 0) {
       }),
     });
   } else {
-    // Fall back to default credentials (works in Vercel/Firebase App Hosting)
-    app = initializeApp();
+    // Fall back to Application Default Credentials (Firebase App Hosting injects
+    // these automatically). Always pass projectId explicitly so initializeApp()
+    // can resolve it even if GOOGLE_CLOUD_PROJECT isn't set in some envs.
+    const projectId =
+      process.env.FIREBASE_PROJECT_ID ||
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+      process.env.GOOGLE_CLOUD_PROJECT;
+    app = initializeApp(projectId ? { projectId } : undefined);
   }
 
   // Only call settings() on a freshly initialised instance — calling it again

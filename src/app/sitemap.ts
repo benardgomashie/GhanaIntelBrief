@@ -42,9 +42,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const articlePages: MetadataRoute.Sitemap = articlesSnapshot.docs.map((doc) => {
       const article = doc.data() as Article;
+      const id = article.id || doc.id; // prefer stored id, fallback to doc.id
       const slug = article.slug || slugify(article.title);
       return {
-        url: `${baseUrl}/article/${article.id}/${slug}`,
+        url: `${baseUrl}/article/${id}/${slug}`,
         lastModified: new Date(article.aggregatedAt),
         changeFrequency: 'monthly' as const,
         priority: 0.6,
