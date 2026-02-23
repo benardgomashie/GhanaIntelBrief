@@ -6,6 +6,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { WhatsAppButton } from '@/components/whatsapp-button';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { AnalyticsProvider } from '@/components/analytics-provider';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: {
@@ -141,6 +142,7 @@ export default function RootLayout({
           <PwaInstallPrompt />
           <AnalyticsProvider />
           <Toaster />
+          <Analytics />
         </FirebaseClientProvider>
       </body>
     </html>
