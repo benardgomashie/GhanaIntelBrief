@@ -31,9 +31,6 @@ export const metadata: Metadata = {
   creator: 'Ghana IntelBrief',
   publisher: 'Ghana IntelBrief',
   metadataBase: new URL('https://www.ghanaintelbrief.site'),
-  alternates: {
-    canonical: '/',
-  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

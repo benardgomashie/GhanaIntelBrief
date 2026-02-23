@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { adminFirestore } from '@/lib/firebase-admin';
 import type { Article } from '@/app/lib/types';
 import HomeClient from './home-client';
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://www.ghanaintelbrief.site',
+  },
+};
 
 export default async function Home() {
   let articles: Article[] = [];
@@ -38,4 +45,5 @@ export default async function Home() {
       <HomeClient articles={articles} />
     </>
   );
+
 }

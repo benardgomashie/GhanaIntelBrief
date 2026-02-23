@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { adminFirestore } from '@/lib/firebase-admin';
 import type { Article } from '@/app/lib/types';
@@ -22,5 +22,5 @@ export default async function ArticleRedirect({ params }: { params: Promise<{ id
   const article = articleDoc.data() as Article;
   const slug = article.slug || slugify(article.title);
 
-  redirect(`/article/${id}/${slug}`);
+  permanentRedirect(`/article/${id}/${slug}`);
 }
