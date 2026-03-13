@@ -13,6 +13,7 @@ export type Article = {
   isRelevantOpportunity: boolean;
   isRelevantGrowth: boolean;
   aiProvider?: string;
+  sponsored?: boolean;
   sourceIds: string[];
   categoryIds: string[];
 };

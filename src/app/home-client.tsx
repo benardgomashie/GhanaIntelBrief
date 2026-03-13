@@ -14,10 +14,16 @@ export default function HomeClient({ articles }: HomeClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredArticles = useMemo(() => {
-    if (!searchTerm.trim()) return articles;
+    const sorted = [...articles].sort((a, b) => {
+      if (a.sponsored && !b.sponsored) return -1;
+      if (!a.sponsored && b.sponsored) return 1;
+      return 0;
+    });
+
+    if (!searchTerm.trim()) return sorted;
 
     const search = searchTerm.toLowerCase();
-    return articles.filter(
+    return sorted.filter(
       (article) =>
         article.title?.toLowerCase().includes(search) ||
         article.summary?.toLowerCase().includes(search) ||

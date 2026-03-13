@@ -35,10 +35,15 @@ export function ArticleCard({ article }: ArticleCardProps) {
     .filter((p) => p.length > 0);
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
+    <Card className={`flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-2xl${article.sponsored ? ' ring-2 ring-yellow-500/60' : ''}`}>
       <CardHeader className="p-0">
         <NextLink href={articleHref} className="block">
           <div className="relative h-48 w-full">
+            {article.sponsored && (
+              <span className="absolute top-3 left-3 z-10 rounded-full bg-yellow-500 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-black shadow">
+                Sponsored
+              </span>
+            )}
             {article.imageThumbnailUrl && !imageError ? (
               <Image
                 src={article.imageThumbnailUrl}
