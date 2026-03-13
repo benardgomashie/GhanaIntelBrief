@@ -71,7 +71,7 @@ const article = {
     'Their referral program lets users extend free access simply by inviting others — ' +
     'no payment required. As Ghana\'s digital health ecosystem grows, platforms like Yom Health ' +
     'that lower the barrier to care are critical for communities across the country.',
-  imageThumbnailUrl: 'https://yomhealth.com/og-image.png',
+  imageThumbnailUrl: 'https://www.ghanaintelbrief.site/sponsoredfeaturedimage.png',
   isRelevantMoney: false,
   isRelevantPolicy: false,
   isRelevantOpportunity: true,
