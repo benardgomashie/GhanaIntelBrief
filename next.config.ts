@@ -11,19 +11,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ['firebase', '@firebase/util', '@firebase/auth'],
   serverExternalPackages: ['@genkit-ai/google-genai', 'genkit'],
   images: {
-    remotePatterns: [
-      // Allow all HTTPS image sources — necessary for a news aggregator pulling
-      // thumbnails from many different publisher domains.
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      // Allow HTTP only for sources that are known to serve over plain HTTP.
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
-    ],
+    // Firebase App Hosting (Spark plan) charges for Next.js image optimization.
+    // Disabling it serves images as-is, eliminating 402 errors entirely.
+    unoptimized: true,
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
